@@ -1,25 +1,28 @@
 var people = new Meteor.Collection('people');
 
 class Person {
-  constructor() {
-    var defaults = {
-      id: null,
-      full_name: "",
-      whereareyoufrom: "Sydney, Australia",
-      whereareyoufrom_lat: -33.865143,
-      whereareyoufrom_lng: 151.209900,
+  constructor(id = null,
+    full_name = "",
+    whereareyoufrom = "Sydney, Australia",
+    whereareyoufrom_lat = -33.865143,
+    whereareyoufrom_lng = 151.209900,
 
-      displaypic: "", // base64 encoded
+    displaypic = "", // base64 encoded
 
-      profile_linkedin: "",
-      profile_facebook: "",
-      profile_twitter: "",
-      profile_number: "",
+    profile_linkedin = "",
+    profile_facebook = "",
+    profile_twitter = "",
+    profile_number = "",
 
-      squads: ["Everyone"],
+    squads = ["Everyone"],
 
-      catchups: [new Date]
-    };
+    catchups = []) 
+  {
+
+  }
+
+  static load(id) {
+
   }
 
   first_name() {

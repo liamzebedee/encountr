@@ -1,1 +1,9 @@
 /* CSS declarations go here */
+
+.ui.menu {
+	font-size: 28px;
+}
+
+.ui.menu #first-menu-item:before {
+    background: none;
+}
