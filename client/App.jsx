@@ -44,41 +44,22 @@ App = React.createClass({
     }
 
     return (
-      <div className={this.state.addingEncounter ? 'visible' : 'hidden'}>
-        <div id="addEncounterModel" className="ui modal">
-          <div className="header">Header</div>
-          <div className="content">
-            <form className="ui form">
-              <div className="field">
-                <label>First Name</label>
-                <input type="text" name="first-name" placeholder="First Name"/>
-              </div>
-              <div className="field">
-                <label>Last Name</label>
-                <input type="text" name="last-name" placeholder="Last Name"/>
-              </div>
-              <div className="field">
-                <div className="ui checkbox">
-                  <input type="checkbox" tabindex="0" className="hidden"/>
-                  <label>I agree to the Terms and Conditions</label>
-                </div>
-              </div>
-              <button className="ui button" type="submit">Submit</button>
-            </form>
-          </div>
-        </div>
+      <div>
+        <AddEncounterDialog/>
 
-        <nav className="ui stackable menu">
+        <nav className="ui stackable menu" style={{ marginTop: 0 }}>
           <div className="item" id="first-menu-item">
             <strong style={{ fontFamily: "'Unica One', cursive" }}>encountr</strong>
           </div>
-          <div className="ui category search item">
+
+          <div className="ui item" style={{ flex: 1 /* how does this even work */ }}>
             <div className="ui transparent icon input">
               <input className="prompt" type="text" placeholder="name, dates, location, groups"  onChange={ this.searchAndFilter }/>
               <i className="search link icon"></i>
             </div>
           </div>
-          <div className="right item">
+          
+          <div className="item">
             <div className="ui positive icon circular button" onClick={this.addEncounter}><i className="plus icon"></i></div>
           </div>
         </nav>
@@ -95,6 +76,50 @@ App = React.createClass({
   }
 });
 
+var AddEncounterDialog = React.createClass({
+  mixins: [React.addons.LinkedStateMixin],
+
+  getInitialState: function(){
+    return {
+      first_name: ""
+    };
+  },
+
+  componentWillUpdate: function(nextProps, nextState){
+    this.person = new Person(nextState);
+  },
+
+  addEncounter: function(){
+    this.person.save();
+  },
+
+  render: function(){
+    return (
+      <div id="addEncounterModel" className="ui modal">
+          <div className="header">Header</div>
+          <div className="content">
+            <div className="ui form">
+              <div className="field">
+                <label>First Name</label>
+                <input type="text" name="first-name" valueLink={this.linkState('first_name')} placeholder="First Name"/>
+              </div>
+              <div className="field">
+                <label>Last Name</label>
+                <input type="text" name="last-name" placeholder="Last Name"/>
+              </div>
+              <div className="field">
+                <div className="ui checkbox">
+                  <input type="checkbox" tabindex="0" className="hidden"/>
+                  <label>I agree to the Terms and Conditions</label>
+                </div>
+              </div>
+              <button className="ui button" onClick={this.addEncounter}>Submit</button>
+            </div>
+          </div>
+        </div>
+    );
+  }
+});
 
 var Person = React.createClass({
   getInitialState: function(){

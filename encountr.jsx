@@ -1,6 +1,7 @@
 People = new Meteor.Collection('people');
 
-class Person {
+Person = class Person {
+
   constructor(props)
   {
     defaults = {
@@ -78,17 +79,17 @@ class Person {
   }
 
   first_name() {
-    return full_name.split(' ')[0];
+    return this.full_name.split(' ')[0];
   }
 
   last_name() {
-    return full_name.split(' ')[1];
+    return this.full_name.split(' ')[1];
   }
 }
 
 if (Meteor.isClient) {
-  var garry = new Person({full_name: 'Garry Visontay', profile_number: '0403330688', profile_email: 'garry@sydneyseedfund.com.au', squads: ["Project Pitch 2015", "Investors", "Sydney"]});
-  garry.save();
+  //var garry = new Person({full_name: 'Garry Visontay', profile_number: '0403330688', profile_email: 'garry@sydneyseedfund.com.au', squads: ["Project Pitch 2015", "Investors", "Sydney"]});
+  //garry.save();
 
   Meteor.startup(function () {
     // Use Meteor.startup to render the component after the page is ready
