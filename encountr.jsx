@@ -1,7 +1,11 @@
+const ENCOUNTR = {
+  version: "0.0.0"
+};
+
 People = new Meteor.Collection('people');
 
-Person = class Person {
 
+Person = class Person {
   constructor(props)
   {
     defaults = {
@@ -23,7 +27,9 @@ Person = class Person {
 
       squads: ["Everyone"],
 
-      catchups: []
+      catchups: [],
+
+      notes: []
     };
     props = $.extend({}, defaults, props);
 
@@ -42,9 +48,10 @@ Person = class Person {
       this.profile_number = profile_number
       this.profile_email = profile_email
 
-      this.squads = ["Everyone"]
+      this.squads = props.squads
 
       this.catchups = catchups;
+      this.notes = notes;
     }
   }
 
@@ -70,7 +77,9 @@ Person = class Person {
 
       squads: this.squads,
 
-      catchups: this.catchups
+      catchups: this.catchups,
+
+      notes: this.notes
     }});
   }
 
@@ -85,15 +94,28 @@ Person = class Person {
   last_name() {
     return this.full_name.split(' ')[1];
   }
+
+  generate_blurb(){
+    var info = {};
+    if(this.profile_email) {
+      info.domain = this.profile_email.split('@')[1];
+    }
+    return info;
+  }
 }
 
 if (Meteor.isClient) {
-  //var garry = new Person({full_name: 'Garry Visontay', profile_number: '0403330688', profile_email: 'garry@sydneyseedfund.com.au', squads: ["Project Pitch 2015", "Investors", "Sydney"]});
-  //garry.save();
-
   Meteor.startup(function () {
     // Use Meteor.startup to render the component after the page is ready
     React.render(<App />, document.getElementById("app"));
+
+    // backupOrDumpDataToJSON = function(){
+    //   var backup = {
+    //     version: ENCOUNTR.version
+    //   };
+    //   backup.People = JSON.stringify(People);
+    //   console.log(backup);
+    // };
   });
 }
 
