@@ -14,7 +14,14 @@ It's still in progress, I'd love some feedback. I'm continuously adding new feat
 ## Install
 [Here's a demo](http://encountr.meteor.com).
 
+### Local
  1. Install [Meteor](http://meteor.com)
  2. `git clone https://github.com/liamzebedee/encountr`
  3. `cd encountr && meteor`
  4. Open [http://localhost:3000](http://localhost:3000)
+
+### Remote
+Same steps, but when you go to run Meteor:
+ - `nohup meteor run --port "http://0.0.0.0:3000" &`
+
+Meteor/Node usually binds to just the localhost, not the actual network address (which is why 0.0.0.0 solves it).
