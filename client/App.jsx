@@ -1,15 +1,16 @@
 //People = new Meteor.Collection('people');
 CSSTransitionGroup = React.addons.CSSTransitionGroup;
 
-App = React.createClass({
+Dashboard = React.createClass({
   mixins: [ReactMeteorData],
 
   getInitialState: function() {
     return {
       searchQuery: "",
-      squadsSearchQuery: new Set(['Everyone']),
+      squadsSearchQuery: new Set(),
       addingEncounter: false,
-      editingEncounter: false
+      editingEncounter: false,
+      fiveClosestSummary: ""
     };
   },
 
@@ -46,15 +47,20 @@ App = React.createClass({
   },
 
   searchForPeopleSelector: function(){
-    var peopleRegex = {
-      $or: [
-        { full_name: this.state.searchQuery ? new RegExp(this.state.searchQuery, 'gi') : { $exists: true } }
-      ],
-    };
+    var peopleRegex = {};
+
+    if(this.state.searchQuery) {
+      peopleRegex.$or = [
+        { full_name: new RegExp(this.state.searchQuery, 'gi') },
+        { notes: new RegExp(this.state.searchQuery, 'gi') }
+      ];
+    }
 
     let squadsArray = Array.from(this.state.squadsSearchQuery);
     if(squadsArray.length > 0){
       peopleRegex.squads = { $all: squadsArray };
+    } else {
+      peopleRegex.squads = { $exists: true };
     }
 
     return peopleRegex;
@@ -95,18 +101,87 @@ App = React.createClass({
     this.setState({ squadsSearchQuery: squadsSearchQuery })
   },
 
+
+  facebook: function(){
+    
+
+    let perms = ['public_profile', 'user_friends', 'read_mailbox' ];
+
+    Meteor.loginWithFacebook({ requestPermissions: perms }, function(err){
+        if (err) {
+            throw new Meteor.Error("Facebook login failed: ${err}");
+        }
+
+        FB.init({
+          appId      : '442721019253710',
+          status     : true,
+          xfbml      : true
+        });
+    });
+
+    FB.api("/"+Meteor.user().services.facebook.id+"/outbox",
+      function (response) {
+        console.log(response);
+      }, { access_token: Meteor.user().services.facebook.accessToken }
+    );
+  },
+
+  summariseYourFiveClosest: function(event){
+    let text = event.target.value.split(',');
+    let friends = [];
+    let commonSquads = new Set();
+    text.forEach((friendName) => {
+      let friend = People.findOne({ full_name: new RegExp(friendName, 'gi') });
+      if(friend !== undefined) {
+        friends.push(friend);
+        friend.squads.map((squad) => { commonSquads.add(squad) });
+      }
+    });
+
+    console.log(Array.from(commonSquads).join(', '));
+
+    this.setState({ fiveClosestSummary: Array.from(commonSquads).join(', ') });
+  },
+
   render: function() {
     var self = this;
     if (!this.data.loaded) {
       return <LoadingSpinner />;
     }
 
+    // Graph
+    // -----
+
+    // var data = {
+    //   nodes: [],
+    //   edges: []
+    // };
+    // Array.from(this.data.searchItems.items).forEach(function(item){
+
+    // });
+    // nodes.push(person._id, person.full_name);
+    var data = { nodes: [], edges: []};
+
+    Array.from(this.data.searchItems.items).forEach((squad) => {
+      data.nodes.push({ id: squad, label: squad });
+    });
+    this.data.people.forEach((person) => {
+      data.nodes.push({ id: person._id, label: person.full_name });
+      person.squads.forEach((squad) => {
+
+        data.edges.push({ from: person._id, to: squad });
+      });
+    });
+    
+
+
+    var graph = <Graph graph={data}/>;
+
     return (
       <div>
 
-        <CSSTransitionGroup transitionName="moveDown">
-          <AddEditEncounterForm shown={this.state.addingEncounter} close={this.closeAddEncounter}/>
-          <AddEditEncounterForm shown={this.state.editingEncounter} person_id={this.state.editingEncounter.person_id} close={this.closeEditEncounter}/>
+          <AddEditEncounterForm title="Add encounter" shown={this.state.addingEncounter} close={this.closeAddEncounter}/>
+          <AddEditEncounterForm title="Edit encounter" shown={this.state.editingEncounter} person_id={this.state.editingEncounter.person_id} close={this.closeEditEncounter}/>
 
           <section style={(this.state.addingEncounter || this.state.editingEncounter) ? {display:'none'} : {display:'block'}}>
             <nav className="ui stackable menu" style={{ marginTop: 0 }}>
@@ -126,7 +201,8 @@ App = React.createClass({
               </div>
             </nav>
 
-            <div className="ui   padded labels">
+
+            <div className="ui padded labels">
               { Array.from(this.data.searchItems.items).map(function(searchItem, i){
                 var active = self.state.squadsSearchQuery.has(searchItem) ? 'blue' : "";
 
@@ -140,8 +216,9 @@ App = React.createClass({
 
             <h4 className="ui horizontal divider header">
               <i className="people icon"></i>
-              People
+              People (<span className="detail">{self.data.people.length}</span>)
             </h4>
+
 
             <span>{'' + this.data.people.length == 0 ? "No results" : '' }</span>
 
@@ -150,16 +227,47 @@ App = React.createClass({
                     return (<PersonCard key={i} {...person} openEditForm={self.editEncounter.bind(self, person._id)}/>);
                   }) }
             </div>
+
+
+            {graph}
+
             </section>
-        </CSSTransitionGroup>
 
       </div>
 
 
     );
+
+//             <span className="ui segment">You are the sum of your five closest friends: <input onBlur={this.summariseYourFiveClosest}/>.<br/><strong><span>{this.state.fiveClosestSummary}</span></strong></span>
+
   }
 });
 
+Login = React.createClass({
+  contextTypes: {
+      router: React.PropTypes.func.isRequired
+    },
+
+  render: function(){
+    return (
+      <div>
+        <BlazeMeteorTemplate template={Template.loginButtons}/>
+      </div>
+    );
+  }
+});
+
+var BlazeMeteorTemplate = React.createClass({
+  componentDidMount: function() {
+    var componentRoot = React.findDOMNode(this);
+    var parentNode = componentRoot.parentNode;
+    parentNode.removeChild(componentRoot);
+    return Blaze.render(this.props.template, parentNode);
+  },
+  render: function(template) {
+    return (<div />)
+  }
+});
 
 var AddEditEncounterForm = React.createClass({
   mixins: [React.addons.LinkedStateMixin],
@@ -181,7 +289,9 @@ var AddEditEncounterForm = React.createClass({
       profile_number: "",
       profile_email: "",
 
-      _squads: ""
+      _squads: "",
+
+      _notes: ""
     };
   },
 
@@ -200,12 +310,14 @@ var AddEditEncounterForm = React.createClass({
   loadPerson: function(person_id){
     let state = Object.assign({}, this.state, Person.load(person_id));
     state._squads = state.squads.join(',');
+    state._notes = state.notes.join('\n');
     this.setState(state);
   },
 
   addEncounter: function(){
     let personData = Object.assign({}, this.state);
     personData.squads = personData._squads.split(',');
+    personData.notes = personData._notes.split('\n');
     let person = new Person(personData);
     person.save();
     this.clearForm();
@@ -221,12 +333,13 @@ var AddEditEncounterForm = React.createClass({
       <div key={this.state.resetKey} className={"ui segment green"} style={this.props.shown ? {display:'block'} : {display:'none'}}>
           <header className="header">
 
-            Add new encounter
+            {this.props.title}
 
             <button className="ui labeled icon button" onClick={this.props.close}>
               <i className="left chevron icon"></i>
               Back
             </button>
+            <button className="ui button" onClick={this.addEncounter}>Submit</button>
 
           </header>
           
@@ -256,8 +369,12 @@ var AddEditEncounterForm = React.createClass({
                 <label>Twitter</label>
                 <input type="text" valueLink={this.linkState('profile_twitter')} placeholder="@dave"/>
               </div>
+              <div className="field">
+                <label>Notes</label>
+                <textarea valueLink={this.linkState('_notes')} placeholder="Each new line
+                is a new note"></textarea>
+              </div>
               
-              <button className="ui button" onClick={this.addEncounter}>Submit</button>
             </div>
           </div>
         </div>
@@ -298,16 +415,16 @@ var PersonCard = React.createClass({
       <Dimmable className="card" dimmed={this.state.askToDelete} controls={this.renderControls()}>
       
         <div className="image">
-          <img src="/images/avatar2/large/molly.png" />
+          {/* <img src="/images/avatar2/large/molly.png" />*/}
         </div>
 
         <div className="content">
           <div className="header">{this.props.full_name}</div>
           <div className="meta">
-            <span className="date">{this.props.shortDesc || ""}</span>
+            {this.props.squads.join(", ")}
           </div>
           <div className="description">
-            {this.props.squads.join(", ")}
+            {this.props.notes.join(', ')}
           </div>
         </div>
 

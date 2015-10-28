@@ -25,3 +25,12 @@ semantic:ui
 semantic:ui-css
 react
 react-runtime
+meteorhacks:npm
+
+
+npm-container
+cosmos:browserify
+accounts-base
+service-configuration
+accounts-ui
+accounts-password

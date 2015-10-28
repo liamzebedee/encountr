@@ -106,8 +106,47 @@ Person = class Person {
 
 if (Meteor.isClient) {
   Meteor.startup(function () {
-    // Use Meteor.startup to render the component after the page is ready
-    React.render(<App />, document.getElementById("app"));
+
+// RouteHandler = ReactRouter.RouteHandler;
+
+
+App = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <div className="container">
+          <div className="ui page">
+          <div className="column">
+              <Dashboard/>
+          </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
+
+      
+// Route = ReactRouter.Route;
+// DefaultRoute = ReactRouter.DefaultRoute;
+
+// var routes = (
+//   <Route handler={App} path="/">
+//     <Route name="dashboard" path="dashboard" handler={Dashboard}/>
+//     <Route name="login" path="login" handler={Login} />
+//     <DefaultRoute handler={Login} />
+//   </Route>
+// );
+
+
+// ReactRouter.run(routes, function (Handler) {
+//   React.render(<Handler/>, document.getElementById("app"));
+// });
+
+React.render((
+  <App/>  
+), document.getElementById("app"));
 
     // backupOrDumpDataToJSON = function(){
     //   var backup = {
