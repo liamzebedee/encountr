@@ -1,2 +1,5 @@
 node_modules
-packages/*
+packages/npm-container/*
+!packages/npm-container/index.js
+!packages/npm-container/package.js
+mup.json
