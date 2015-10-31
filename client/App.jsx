@@ -175,7 +175,7 @@ Dashboard = React.createClass({
     
 
 
-    var graph = <Graph graph={data}/>;
+    // var graph = <Graph graph={data}/>;
 
     return (
       <div>
@@ -195,6 +195,10 @@ Dashboard = React.createClass({
                   <i className="search link icon"></i>
                 </div>
               </div>
+
+              <div className="item">
+                <i className="comments outline icon"></i> Encounters
+              </div>
               
               <div className="item">
                 <div className="ui positive icon circular button" onClick={this.addEncounter}><i className="plus icon"></i></div>
@@ -202,7 +206,7 @@ Dashboard = React.createClass({
             </nav>
 
 
-            <div className="ui padded labels">
+            <div className="ui padded labels" style={{ paddingLeft: '2em', paddingRight: '2em' }}>
               { Array.from(this.data.searchItems.items).map(function(searchItem, i){
                 var active = self.state.squadsSearchQuery.has(searchItem) ? 'blue' : "";
 
@@ -229,7 +233,7 @@ Dashboard = React.createClass({
             </div>
 
 
-            {graph}
+            
 
             </section>
 

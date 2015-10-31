@@ -1,4 +1,3 @@
 {
-	"react-graph-vis": "0.0.3",
-	"react-router":	"0.13.4"
+	"react-router":	"1.0.0-rc3"
 }
